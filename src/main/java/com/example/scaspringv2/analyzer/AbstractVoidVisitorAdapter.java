@@ -12,14 +12,11 @@ public abstract class AbstractVoidVisitorAdapter<A> extends VoidVisitorAdapter<A
 
     @Override
     public void visit(CompilationUnit cu, A arg) {
-
         if (cu.getTypes().size() > 0) {
             className = cu.getTypes().get(0).getNameAsString();
         } else {
             className = "Unknown class";
         }
-
-
         super.visit(cu, arg);
     }
 }

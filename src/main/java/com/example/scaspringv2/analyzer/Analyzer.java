@@ -12,7 +12,6 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
 public class Analyzer extends SimpleFileVisitor<Path> {
-
     private Collector collector;
 
     public Analyzer(Collector collector) {
@@ -22,42 +21,25 @@ public class Analyzer extends SimpleFileVisitor<Path> {
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
             throws IOException {
-
         if (isNotJava(file))
             return FileVisitResult.CONTINUE;
-
-        // initialize collector
-        ComplexityCounter complexityCounter = new ComplexityCounter(getClassName(file), collector);
-
-        // initialize compilation unit
         CompilationUnit unit = JavaParser.parse(file.toFile());
 
         // collect all the stats
-        new BooleanMethodVisitor().visit(unit, collector); //analyzeResults added
-        new TooLongVisitor().visit(unit, collector); //analyzeResults added
-        new TooSmallVisitor().visit(unit, collector); //analyzeResults added
-        new VariableNamingConventionVisitor().visit(unit, collector); // todo: add analyzeResult
-        new ClassLineCounterVisitor().visit(unit, collector); //analyzeResults added
-        new ClassComplexityVisitor().visit(unit, complexityCounter);
-        new MetricVisitor().visit(unit, collector);
-
-        // print analysis
-        complexityCounter.analyze();
-        collector.addComplexityResults(getClassName(file), complexityCounter);
+        new BooleanMethodVisitor().visit(unit, collector);
+        new TooLongVisitor().visit(unit, collector);
+        new TooSmallVisitor().visit(unit, collector);
+        new VariableNamingConventionVisitor().visit(unit, collector);
+        new ClassLineCounterVisitor().visit(unit, collector);
 
         return FileVisitResult.CONTINUE;
     }
 
     /**
      * Extract class name from the path
-     *
-     * @param file
-     * @return
      */
     private String getClassName(Path file) {
-
         String filename = file.getFileName().toString();
-
         if (filename.indexOf(".") > 0) {
             filename = filename.substring(0, filename.lastIndexOf("."));
         }
@@ -66,13 +48,8 @@ public class Analyzer extends SimpleFileVisitor<Path> {
 
     /**
      * We only need to analyze the Java files
-     *
-     * @param file
-     * @return
      */
     private boolean isNotJava(Path file) {
-
         return !file.toString().endsWith("java");
     }
-
 }

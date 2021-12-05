@@ -74,14 +74,10 @@ function Main() {
                                label="Путь к файлу"
                                variant="outlined"
                                style={{width: "100%"}}
-                               onChange={(event) => {
-                                   console.log("event.target.value: ", event.target.value);
-                                   setFilename(event.target.value)
-                               }}
+                               onChange={(event) => setFilename(event.target.value)}
                     />
-                    {console.log("filename: ", filename)}
                 </Grid>
-                <Grid item xs={2} alignItems="center">
+                <Grid item xs={2}>
                     <Button variant="contained"
                             size="large"
                             className={classes.btn}
@@ -94,7 +90,7 @@ function Main() {
                     {result && !isResultEmpty(result) ?
                         <TableContainer component={Paper}>
                             <Table aria-label="simpler table">
-                                <TableHead style={{backgroundColor: "#d5d5d5"}}>
+                                <TableHead style={{ backgroundColor: "#d5d5d5" }}>
                                     <TableRow>
                                         <TableCell align="center">Суть характеристики</TableCell>
                                         <TableCell align="center">Значение нормы</TableCell>
@@ -118,8 +114,7 @@ function Main() {
                                 </TableBody>
                             </Table>
                         </TableContainer>
-                        : console.log("There are no data!")
-                    }
+                        : console.log("There are no data!")}
                 </Grid>
             </Grid>
         </>

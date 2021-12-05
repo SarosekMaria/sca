@@ -17,22 +17,14 @@ public class BooleanMethodVisitor extends AbstractVoidVisitorAdapter<Collector> 
      * Boolean method should start isSomething(), not getSomething()
      * <p>
      * getSomething(someVar) is OK, though
-     *
-     * @param declaration
-     * @param collector
      */
     @Override
     public void visit(MethodDeclaration declaration, Collector collector) {
         List<String> warnings = new ArrayList<>();
         if (isBooleanDeclarationCorrect(declaration)) {
             var warningMsg = "Наименование метода \"" + declaration.getType().toString() + "\" должно начинаться с префикса is или has";
-            collector.addWarning(className, warningMsg);
             warnings.add(warningMsg);
         }
-//        collector.addWarningToAnalyzeResults(
-//                "BOOLEAN_STARTS_WITH_IS_HAS",
-//                new AnalyzeResult<>(className, true, warnings)
-//        );
         collector.addWarningToAnalyzeResults(ParamType.BOOLEAN_STARTS_WITH_IS_HAS, warnings);
     }
 

@@ -21,9 +21,6 @@ public class VariableNamingConventionVisitor extends AbstractVoidVisitorAdapter<
 
     /**
      * Check if class is in camel case
-     *
-     * @param declaration
-     * @param collector
      */
     @Override
     public void visit(ClassOrInterfaceDeclaration declaration, Collector collector) {
@@ -32,13 +29,8 @@ public class VariableNamingConventionVisitor extends AbstractVoidVisitorAdapter<
                 !declaration.getNameAsString().matches(CLASS_NAME_REGEX);
         if (isClassNameInCamelCase) {
             String warning = "Наименование класса " + className + " должно быть в CamelCase стиле (" + declaration.getNameAsString() + ").";
-            collector.addWarning(className, warning);
             classNameInCamelCaseWarning.add(warning);
         }
-//        collector.addAnalyzeResult(
-//                "CAMEL_CASE_CLASS_NAME",
-//                new AnalyzeResult<>(className, CAMEL_CASE_CLASS_NAME, classNameInCamelCaseWarning)
-//        );
         collector.addWarningToAnalyzeResults(ParamType.NAMES_IN_CAMEL_CASE, classNameInCamelCaseWarning);
 
         super.visit(declaration, collector);
@@ -48,9 +40,6 @@ public class VariableNamingConventionVisitor extends AbstractVoidVisitorAdapter<
     /**
      * Check if method & method variables is in camelCase, not in underscore_case,
      * since in Java we use camelCase naming convention
-     *
-     * @param declaration
-     * @param collector
      */
     @Override
     public void visit(MethodDeclaration declaration, Collector collector) {
@@ -59,13 +48,8 @@ public class VariableNamingConventionVisitor extends AbstractVoidVisitorAdapter<
         boolean isMethodInCamelCase = CAMEL_CASE_CLASS_NAME_PARAMS_METHODS && (methodName.contains("_") || !methodName.matches("^[a-z][a-zA-Z0-9]*$"));
         if (isMethodInCamelCase) {
             String warning = "В классе " + className + " наименование метода \"" + methodName + "\" должно быть в 'camelCase', а не в 'underscore_case'";
-            collector.addWarning(className, warning);
             methodInCamelCaseWarnings.add(warning);
         }
-//        collector.addAnalyzeResult(
-//                "METHOD_IN_CAMEL_CASE",
-//                new AnalyzeResult<>(className, METHOD_IN_CAMEL_CASE, methodInCamelCaseWarnings)
-//        );
         collector.addWarningToAnalyzeResults(ParamType.NAMES_IN_CAMEL_CASE, methodInCamelCaseWarnings);
 
         if (CAMEL_CASE_CLASS_NAME_PARAMS_METHODS) {
@@ -75,27 +59,17 @@ public class VariableNamingConventionVisitor extends AbstractVoidVisitorAdapter<
                 if (isParamInCamelCase) {
                     String warning = "В классе " + className + "\" переменная \"" + param.getName() +
                             " метода \"" + methodName + "\" должна быть в 'camelCase', а не в 'underscore_case'";
-                    collector.addWarning(className, warning);
                     paramInCamelCaseWarnings.add(warning);
                 }
             }
-//            collector.addAnalyzeResult(
-//                    "PARAM_IN_CAMEL_CASE",
-//                    new AnalyzeResult<>(className, PARAM_IN_CAMEL_CASE, paramInCamelCaseWarnings)
-//            );
             collector.addWarningToAnalyzeResults(ParamType.NAMES_IN_CAMEL_CASE, paramInCamelCaseWarnings);
         }
-
         super.visit(declaration, collector);
-
     }
 
     /**
      * Check if class variables is in camelCase, not in underscore_case,
      * since in Java we use camelCase naming convention
-     *
-     * @param declaration
-     * @param collector
      */
     @Override
     public void visit(VariableDeclarationExpr declaration, Collector collector) {
@@ -103,18 +77,13 @@ public class VariableNamingConventionVisitor extends AbstractVoidVisitorAdapter<
             List<String> classFieldsInCamelCaseWarnings = new ArrayList<>();
             for (VariableDeclarator variable : declaration.getVariables()) {
                 String name = variable.getNameAsString();
-                if (name.matches(OK_REGEX)) // e.x. SOME_VARIABLE is OKAY
+                if (name.matches(OK_REGEX))
                     continue;
                 if (name.contains("_")) {
                     String warning = "В классе " + className + "\" поле \"" + name + "\" должно быть в 'camelCase', а не в 'underscore_case'";
-                    collector.addWarning(className, warning);
                     classFieldsInCamelCaseWarnings.add(warning);
                 }
             }
-//            collector.addAnalyzeResult(
-//                    "PARAM_IN_CAMEL_CASE",
-//                    new AnalyzeResult<>(className, PARAM_IN_CAMEL_CASE, classFieldsInCamelCaseWarnings)
-//            );
             collector.addWarningToAnalyzeResults(ParamType.NAMES_IN_CAMEL_CASE, classFieldsInCamelCaseWarnings);
         }
     }

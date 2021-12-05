@@ -14,7 +14,6 @@ public class ClassLineCounterVisitor extends AbstractVoidVisitorAdapter<Collecto
 
     /**
      * Calculate number of lines in the class
-     *
      */
     public void visit(CompilationUnit cu, Collector collector) {
         super.visit(cu, collector);
@@ -23,17 +22,10 @@ public class ClassLineCounterVisitor extends AbstractVoidVisitorAdapter<Collecto
         int count = programLines.length;
         List<String> warnings = new ArrayList<>();
         if (count > MAX_CLASS_LENGTH) {
-            String warning = "Класс \"" + className + " содержит " + count + " строк, что превышает пороговое значение в \"" + MAX_CLASS_LENGTH + " строк";
-            collector.addWarning(className, warning);
+            String warning = "Класс \"" + className + " содержит " + count +
+                    " строк, что превышает пороговое значение в \"" + MAX_CLASS_LENGTH + " строк";
             warnings.add(warning);
         }
-//        collector.addAnalyzeResult(
-//                "MAX_CLASS_LENGTH",
-//                new AnalyzeResult<>(className, MAX_CLASS_LENGTH, warnings)
-//        );
         collector.addWarningToAnalyzeResults(ParamType.MAX_CLASS_LENGTH, warnings);
-
-        collector.incrementMetric("Code Lines", count);
     }
-
 }

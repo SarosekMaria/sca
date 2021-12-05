@@ -58219,13 +58219,11 @@ function Main() {
       width: "100%"
     },
     onChange: function onChange(event) {
-      console.log("event.target.value: ", event.target.value);
-      setFilename(event.target.value);
+      return setFilename(event.target.value);
     }
-  }), console.log("filename: ", filename)), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(_material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_10__["default"], {
+  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(_material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_10__["default"], {
     item: true,
-    xs: 2,
-    alignItems: "center"
+    xs: 2
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_12__["default"], {
     variant: "contained",
     size: "large",
