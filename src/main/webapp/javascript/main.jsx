@@ -21,9 +21,6 @@ const useStyles = makeStyles(theme => ({
     root: {
         textAlign: "center",
     },
-    btn: {
-
-    }
 }));
 
 function Main() {
@@ -71,7 +68,7 @@ function Main() {
     return (
         <>
             <h1>Введите путь к файлу для анализа программного кода:</h1>
-            <Grid container spacing={2}>
+            <Grid container spacing={2} alignItems="center" alignContent="center">
                 <Grid item xs={10}>
                     <TextField id="outlined-basic"
                                label="Путь к файлу"
@@ -84,7 +81,7 @@ function Main() {
                     />
                     {console.log("filename: ", filename)}
                 </Grid>
-                <Grid item xs={2}>
+                <Grid item xs={2} alignItems="center">
                     <Button variant="contained"
                             size="large"
                             className={classes.btn}
