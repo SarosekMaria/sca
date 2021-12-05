@@ -1,34 +1,25 @@
 package com.example.scaspringv2.analyzer.visitors;
 
 import com.example.scaspringv2.analyzer.AbstractVoidVisitorAdapter;
-import com.example.scaspringv2.analyzer.Config;
 import com.example.scaspringv2.analyzer.collectors.AnalyzeResult;
 import com.example.scaspringv2.analyzer.collectors.Collector;
+import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
+import com.github.javaparser.ast.stmt.BlockStmt;
+import com.github.javaparser.ast.stmt.Statement;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.example.scaspringv2.analyzer.Config.*;
+import static java.util.Objects.nonNull;
+
 public class TooLongVisitor extends AbstractVoidVisitorAdapter<Collector> {
-
-
-    //todo: зачем? Можно убрать, сделать статические импорты из файла конфигов
-    public static final int MAX_BODY_LENGTH = Config.MAX_BODY_LENGTH;
-
-    private static final int MAX_METHOD_NAME_LENGTH = Config.MAX_METHOD_NAME_LENGTH;
-
-    private static final int MAX_PARAM_COUNT = Config.MAX_PARAM_COUNT;
-
-    private static final int MAX_VARIABLE_LENGTH = Config.MAX_VARIABLE_LENGTH;
-
-    private static final int MAX_VARIABLE_COUNT = Config.MAX_VARIABLE_COUNT;
-
-    private static final int MAX_METHODS_COUNT = Config.MAX_METHODS_COUNT;
-
+    public static final String MORE_THAN_ONE_ACTION_PER_LINE_REGEX = ".*;.+;*";
 
     /**
      * Check for method count
@@ -41,12 +32,15 @@ public class TooLongVisitor extends AbstractVoidVisitorAdapter<Collector> {
         int methodsCount = declaration.getArguments().size();
         List<String> warningMsgs = new ArrayList<>();
         if (methodsCount > MAX_METHODS_COUNT) {
-            String warning = "Class  has more than " + MAX_METHODS_COUNT + " methods";
+            String warning = "В классе " + className + " " + methodsCount + " методов! Пороговое значение: " + MAX_METHODS_COUNT;
+//            String warning = "Class  has more than " + MAX_METHODS_COUNT + " methods";
             collector.addWarning(className, warning);
             warningMsgs.add(warning);
         }
-        collector.addAnalyzeResult("MAX_METHODS_COUNT",
-                new AnalyzeResult<>(className, methodsCount, MAX_METHODS_COUNT, warningMsgs));
+        collector.addAnalyzeResult(
+                "MAX_METHODS_COUNT",
+                new AnalyzeResult<>(className, MAX_METHODS_COUNT, warningMsgs)
+        );
         super.visit(declaration, collector);
     }
 
@@ -58,48 +52,106 @@ public class TooLongVisitor extends AbstractVoidVisitorAdapter<Collector> {
      */
     @Override
     public void visit(MethodDeclaration declaration, Collector collector) {
-        int methodBodyLength = declaration.getRange().map(range -> range.begin.line - range.end.line).orElse(0);
+        int methodBodyLength = declaration.getRange().map(range -> range.end.line - range.begin.line - 1).orElse(0);
         int methodNameLength = declaration.getNameAsString().length();
         int parametersCount = declaration.getParameters().size();
+        String[] methodStrings = declaration.toString().split("\n");
+        int methodNotEmptyLines = methodStrings.length - 2;
+
+        System.out.println("methodBodyLength: " + methodBodyLength);
+        System.out.println("programLines.length: " + methodNotEmptyLines);
+        List<String> lineLengthWarnings = new ArrayList<>();
+        List<String> lineActionWarnings = new ArrayList<>();
+        for (String methodLine : methodStrings) {
+            int lineLength = methodLine.length();
+            if (lineLength > MAX_SYMBOLS_COUNT_PER_LINE) {
+                String warning = "Строка класса " + className + " в методе \"" + declaration.getName() +
+                        "\" слишком длинная (" + lineLength + ")! Пороговое значение: " + MAX_SYMBOLS_COUNT_PER_LINE;
+//                String warning = "Method \"" + declaration.getName() + "\" variable \"" + param.getName() + "\" is way too long!";
+                collector.addWarning(className, warning);
+                lineLengthWarnings.add(warning);
+            }
+
+            if (methodLine.matches(MORE_THAN_ONE_ACTION_PER_LINE_REGEX)) {
+                String warning = "Указано некорректное количество действий в одной строке метода \"" + declaration.getName() + "\"! " +
+                        "Необходимо указать только одно действие";
+//                String warning = "Method \"" + declaration.getName() + "\" variable \"" + param.getName() + "\" is way too long!";
+                collector.addWarning(className, warning);
+                lineActionWarnings.add(warning);
+            }
+        }
+        collector.addAnalyzeResult(
+                "MAX_SYMBOLS_COUNT_PER_LINE",
+                new AnalyzeResult<>(className, MAX_SYMBOLS_COUNT_PER_LINE, lineLengthWarnings)
+        );
+        collector.addAnalyzeResult(
+                "ONE_ACTION_PER_LINE",
+                new AnalyzeResult<>(className, MAX_NUMBER_OF_ACTIONS_PER_LINE, lineActionWarnings)
+        );
+
+        List<String> emptyLinesCountWarnings = new ArrayList<>();
+        int emptyLinesCount = methodBodyLength - methodNotEmptyLines;
+        if (emptyLinesCount > MAX_EMPTY_LINES_COUNT_PER_METHOD) {
+            String warning = "Метод " + declaration.getNameAsString() + " класса " + className + " имеет слишком много пустых строк (" + emptyLinesCount + ")!";
+//                String warning = "Method \"" + declaration.getName() + "\" variable \"" + param.getName() + "\" is way too long!";
+            collector.addWarning(className, warning);
+            emptyLinesCountWarnings.add(warning);
+        }
+        collector.addAnalyzeResult(
+                "MAX_EMPTY_LINES_COUNT_PER_METHOD",
+                new AnalyzeResult<>(className, MAX_EMPTY_LINES_COUNT_PER_METHOD, emptyLinesCountWarnings)
+        );
 
         List<String> maxBodyLengthWarnings = new ArrayList<>();
         if (methodBodyLength > MAX_BODY_LENGTH) {
-            String warning = "Method \"" + declaration.getName() + "\" body has more than " + MAX_BODY_LENGTH + " lines";
+            String warning = "Метод \"" + declaration.getName() + "\" класса " + className + " имеет " + methodBodyLength + " строк!";
+//            String warning = "Method \"" + declaration.getName() + "\" body has more than " + MAX_BODY_LENGTH + " lines";
             collector.addWarning(className, warning);
             maxBodyLengthWarnings.add(warning);
         }
-        collector.addAnalyzeResult("MAX_BODY_LENGTH", new AnalyzeResult<>(className, methodBodyLength, MAX_BODY_LENGTH, maxBodyLengthWarnings));
+        collector.addAnalyzeResult(
+                "MAX_BODY_LENGTH",
+                new AnalyzeResult<>(className, MAX_BODY_LENGTH, maxBodyLengthWarnings)
+        );
 
         List<String> methodNameLengthWarnings = new ArrayList<>();
         if (methodNameLength > MAX_METHOD_NAME_LENGTH) {
-            String warning = "Method \"" + declaration.getName() + "\" name is too long, it has more than " + MAX_METHOD_NAME_LENGTH + " characters";
+            String warning = "Метод \"" + declaration.getName() + "\" класса " + className + " имеет слишком длинное название (" + methodNameLength + " )!";
+//            String warning = "Method \"" + declaration.getName() + "\" name is too long, it has more than " + MAX_METHOD_NAME_LENGTH + " characters";
             collector.addWarning(className, warning);
             methodNameLengthWarnings.add(warning);
         }
-        collector.addAnalyzeResult("MAX_METHOD_NAME_LENGTH", new AnalyzeResult<>(className, methodNameLength, MAX_METHOD_NAME_LENGTH, methodNameLengthWarnings));
+        collector.addAnalyzeResult(
+                "MAX_METHOD_NAME_LENGTH",
+                new AnalyzeResult<>(className, MAX_METHOD_NAME_LENGTH, methodNameLengthWarnings));
 
         List<String> maxParamCountWarnings = new ArrayList<>();
         if (parametersCount > MAX_PARAM_COUNT) {
-            String warning = "Method \"" + declaration.getName() + "\"  has more than " + MAX_METHOD_NAME_LENGTH + " parameters";
+            String warning = "Метод \"" + declaration.getName() + "\" класса " + className + " имеет слишком много параметов (" + parametersCount + " )!";
+//            String warning = "Method \"" + declaration.getName() + "\"  has more than " + MAX_METHOD_NAME_LENGTH + " parameters";
             collector.addWarning(className, warning);
             maxParamCountWarnings.add(warning);
         }
-        collector.addAnalyzeResult("MAX_PARAM_COUNT", new AnalyzeResult<>(className, parametersCount, MAX_PARAM_COUNT, maxParamCountWarnings));
+        collector.addAnalyzeResult(
+                "MAX_PARAM_COUNT",
+                new AnalyzeResult<>(className, MAX_PARAM_COUNT, maxParamCountWarnings)
+        );
 
-        //todo: подумать, как коллекционировать информацию о множественных параметрах (то есть в методе может быть много переменных, не удовлетворяющих условию)
-        //можно делать так - собирать названия всех переменных в мапу - <ИмяПеременной, Ошибка>, а потом на ui, если мапа переменных с ошибками не пуста,
-        //то в сертификате эргономичности указывать, что пункт не пройден и пояснение по всем косячным переменным
+        List<String> maxVariableLengthWarnings = new ArrayList<>();
         for (Parameter param : declaration.getParameters()) {
-            List<String> maxVariableLengthWarnings = new ArrayList<>();
             int paramNameLength = param.getNameAsString().length();
             if (paramNameLength > MAX_VARIABLE_LENGTH) {
-                String warning = "Method \"" + declaration.getName() + "\" variable \"" + param.getName() + "\" is way too long!";
+                String warning = "В классе " + className + " внутри метода \"" + declaration.getName() + "\" переменная \"" + param.getName() + "\" " +
+                        "имеет слишком длинное название (" + paramNameLength + ")! Необходимо его уменьшить до " + MAX_VARIABLE_LENGTH + ".";
+//                String warning = "Method \"" + declaration.getName() + "\" variable \"" + param.getName() + "\" is way too long!";
                 collector.addWarning(className, warning);
                 maxVariableLengthWarnings.add(warning);
             }
-            collector.addAnalyzeResult("MAX_VARIABLE_LENGTH", new AnalyzeResult<>(className, paramNameLength, MAX_VARIABLE_LENGTH, maxVariableLengthWarnings));
         }
-
+        collector.addAnalyzeResult(
+                "MAX_VARIABLE_LENGTH",
+                new AnalyzeResult<>(className, MAX_VARIABLE_LENGTH, maxVariableLengthWarnings)
+        );
     }
 
 
@@ -112,23 +164,31 @@ public class TooLongVisitor extends AbstractVoidVisitorAdapter<Collector> {
     @Override
     public void visit(VariableDeclarationExpr declaration, Collector collector) {
         int variablesCount = declaration.getVariables().size();
+
         List<String> variablesCountWarnings = new ArrayList<>();
         if (variablesCount > MAX_VARIABLE_COUNT) {
-            String warning = "Class has more than " + MAX_VARIABLE_COUNT + " variables";
+            String warning = "Класс " + className + " имеет болле " + MAX_VARIABLE_COUNT + " переменных";
+//            String warning = "Class has more than " + MAX_VARIABLE_COUNT + " variables";
             collector.addWarning(className, warning);
             variablesCountWarnings.add(warning);
         }
-        collector.addAnalyzeResult("MAX_VARIABLE_COUNT", new AnalyzeResult<>(className, variablesCount, MAX_VARIABLE_COUNT, variablesCountWarnings));
+        collector.addAnalyzeResult(
+                "MAX_VARIABLE_COUNT",
+                new AnalyzeResult<>(className, MAX_VARIABLE_COUNT, variablesCountWarnings));
 
+        List<String> maxVariableLengthWarnings = new ArrayList<>();
         for (VariableDeclarator variable : declaration.getVariables()) {
-            List<String> maxVariableLengthWarnings = new ArrayList<>();
             int variableNameLength = variable.getNameAsString().length();
             if (variableNameLength > MAX_VARIABLE_LENGTH) {
-                String warning = "Field variable \"" + variable.getNameAsString() + "\" is way too long!";
+                String warning = "В классе " + className + " переменная \"" + variable.getNameAsString() + "\" имеет слишком длинное название!";
+//                String warning = "Field variable \"" + variable.getNameAsString() + "\" is way too long!";
                 collector.addWarning(className, warning);
                 maxVariableLengthWarnings.add(warning);
             }
-            collector.addAnalyzeResult("MAX_VARIABLE_LENGTH", new AnalyzeResult<>(className, variableNameLength, MAX_VARIABLE_LENGTH, maxVariableLengthWarnings));
         }
+        collector.addAnalyzeResult(
+                "MAX_VARIABLE_LENGTH",
+                new AnalyzeResult<>(className, MAX_VARIABLE_LENGTH, maxVariableLengthWarnings)
+        );
     }
 }

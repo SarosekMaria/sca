@@ -20,6 +20,5 @@ public class AnalyzeResultsController {
     public Map<String, AnalyzeResult<?>> getHandlingResults(@RequestBody String filename) {
         System.out.println("------- filename: " + filename);
         return analyzeResultService.getAnalysis(filename);
-//        return new HandlingResult("SUCCESS");
     }
 }

@@ -7,6 +7,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import static com.example.scaspringv2.analyzer.Config.*;
+import static com.example.scaspringv2.analyzer.collectors.AnalyzeResult.empty;
+
 /**
  * Collect all stats to hashmap
  */
@@ -24,7 +27,27 @@ public class HashMapCollector implements Collector {
         warnings = new HashMap<>();
         stats = new HashMap<>();
         complexity = new HashMap<>();
-        analyzeResultsByStatNames = new HashMap<>();
+        analyzeResultsByStatNames = init();
+    }
+
+    private HashMap<String, AnalyzeResult<?>> init() {
+        HashMap<String, AnalyzeResult<?>> analyzeResultMap = new HashMap<>();
+        analyzeResultMap.put("MAX_CLASS_LENGTH", empty(MAX_CLASS_LENGTH));
+        analyzeResultMap.put("MAX_BODY_LENGTH", empty(MAX_BODY_LENGTH));
+        analyzeResultMap.put("MAX_METHOD_NAME_LENGTH", empty(MAX_METHOD_NAME_LENGTH));
+        analyzeResultMap.put("MAX_PARAM_COUNT", empty(MAX_PARAM_COUNT));
+        analyzeResultMap.put("MAX_VARIABLE_LENGTH", empty(MAX_VARIABLE_LENGTH));
+        analyzeResultMap.put("MAX_VARIABLE_COUNT", empty(MAX_VARIABLE_COUNT));
+        analyzeResultMap.put("MAX_METHODS_COUNT", empty(MAX_METHODS_COUNT));
+        analyzeResultMap.put("MIN_VARIABLE_LENGTH", empty(MIN_VARIABLE_LENGTH));
+        analyzeResultMap.put("BOOLEAN_STARTS_WITH_IS_HAS", empty(BOOLEAN_STARTS_WITH_IS_HAS));
+        analyzeResultMap.put("CAMEL_CASE_CLASS_NAME", empty(CAMEL_CASE_CLASS_NAME));
+        analyzeResultMap.put("METHOD_IN_CAMEL_CASE", empty(METHOD_IN_CAMEL_CASE));
+        analyzeResultMap.put("PARAM_IN_CAMEL_CASE", empty(PARAM_IN_CAMEL_CASE));
+        analyzeResultMap.put("MAX_SYMBOLS_COUNT_PER_LINE", empty(MAX_SYMBOLS_COUNT_PER_LINE));
+        analyzeResultMap.put("MAX_NUMBER_OF_ACTIONS_PER_LINE", empty(MAX_NUMBER_OF_ACTIONS_PER_LINE));
+        analyzeResultMap.put("MAX_EMPTY_LINES_COUNT_PER_METHOD", empty(MAX_EMPTY_LINES_COUNT_PER_METHOD));
+        return analyzeResultMap;
     }
 
     public static HashMap<String, List<String>> getWarnings() {
@@ -52,7 +75,7 @@ public class HashMapCollector implements Collector {
             warnings.get(className).add(warning);
         } else {
 
-            warnings.put(className, new ArrayList<String>() {{
+            warnings.put(className, new ArrayList<>() {{
                 add(warning);
             }});
         }
