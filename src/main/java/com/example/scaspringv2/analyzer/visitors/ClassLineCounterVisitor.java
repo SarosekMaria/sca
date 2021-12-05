@@ -1,8 +1,8 @@
 package com.example.scaspringv2.analyzer.visitors;
 
 import com.example.scaspringv2.analyzer.AbstractVoidVisitorAdapter;
-import com.example.scaspringv2.analyzer.collectors.AnalyzeResult;
 import com.example.scaspringv2.analyzer.collectors.Collector;
+import com.example.scaspringv2.analyzer.collectors.ParamType;
 import com.github.javaparser.ast.CompilationUnit;
 
 import java.util.ArrayList;
@@ -24,14 +24,14 @@ public class ClassLineCounterVisitor extends AbstractVoidVisitorAdapter<Collecto
         List<String> warnings = new ArrayList<>();
         if (count > MAX_CLASS_LENGTH) {
             String warning = "Класс \"" + className + " содержит " + count + " строк, что превышает пороговое значение в \"" + MAX_CLASS_LENGTH + " строк";
-//            String warning = "Class has more than " + MAX_CLASS_LENGTH + " lines";
             collector.addWarning(className, warning);
             warnings.add(warning);
         }
-        collector.addAnalyzeResult(
-                "MAX_CLASS_LENGTH",
-                new AnalyzeResult<>(className, MAX_CLASS_LENGTH, warnings)
-        );
+//        collector.addAnalyzeResult(
+//                "MAX_CLASS_LENGTH",
+//                new AnalyzeResult<>(className, MAX_CLASS_LENGTH, warnings)
+//        );
+        collector.addWarningToAnalyzeResults(ParamType.MAX_CLASS_LENGTH, warnings);
 
         collector.incrementMetric("Code Lines", count);
     }

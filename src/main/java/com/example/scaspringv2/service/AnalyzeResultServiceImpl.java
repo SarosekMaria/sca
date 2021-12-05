@@ -3,7 +3,6 @@ package com.example.scaspringv2.service;
 import com.example.scaspringv2.analyzer.Analyzer;
 import com.example.scaspringv2.analyzer.collectors.AnalyzeResult;
 import com.example.scaspringv2.analyzer.collectors.HashMapCollector;
-import com.example.scaspringv2.analyzer.printers.MetricPrinter;
 import com.example.scaspringv2.analyzer.printers.WarningPrinter;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +21,7 @@ public class AnalyzeResultServiceImpl implements AnalyzeResultService {
             return run(Paths.get(path));
         } catch (Exception e) {
             System.out.println("Looks like you specified not existing directory. Exiting...");
+            e.printStackTrace();
         }
         return new HashMap<>();
     }
@@ -36,10 +36,10 @@ public class AnalyzeResultServiceImpl implements AnalyzeResultService {
             HashMapCollector collector = new HashMapCollector();
 
             Files.walkFileTree(p, new Analyzer(collector));
-            var analyzeResultsByStatNames = collector.getAnalyzeResultsByStatNames();
+            var analyzeResultsByStatNames = collector.getAnalyzeResultByName();
             new WarningPrinter(collector).print();
-            new MetricPrinter(collector).print();
-            new MetricPrinter(collector).print();
+//            new MetricPrinter(collector).print();
+//            new MetricPrinter(collector).print();
 
             return analyzeResultsByStatNames;
         } catch (IOException e) {

@@ -12,10 +12,24 @@ import TableCell from "@material-ui/core/TableCell";
 import TableBody from "@material-ui/core/TableBody";
 import TextField from "@material-ui/core/TextField";
 import Grid from "@material-ui/core/Grid";
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemText from "@material-ui/core/ListItemText";
+import makeStyles from "@material-ui/core/styles/makeStyles";
+
+const useStyles = makeStyles(theme => ({
+    root: {
+        textAlign: "center",
+    },
+    btn: {
+
+    }
+}));
 
 function Main() {
     const [result, setResult] = useState(null);
     const [filename, setFilename] = useState("");
+    const classes = useStyles();
 
     const onFileUpload = () => {
         axios.post(`http://localhost:8080/api/sca`, filename,
@@ -33,15 +47,30 @@ function Main() {
         return Object.keys(result).length === 0;
     }
 
+    const printWarnings = (warnings) => {
+        return <List>
+            {warnings.map((warning, key) =>
+                <ListItem key={key} className={classes.root}>
+                    <ListItemText>{warning}</ListItemText>
+                </ListItem>)}
+        </List>
+    }
+
+    const getTableRow = (paramResult) => {
+        return <TableRow>
+            <TableCell align="center">{paramResult.paramNameRus}</TableCell>
+            <TableCell align="center">{paramResult.thresholdValue}</TableCell>
+            <TableCell align="center">
+                {paramResult.warnings.length === 0
+                    ? "Соответствует"
+                    : printWarnings(paramResult.warnings)}
+            </TableCell>
+        </TableRow>
+    }
+
     return (
         <>
-            <h1>Введите путь к файлу для статического анализа кода:</h1>
-            {/*<input style={{width: "40%"}}*/}
-            {/*       type="text"*/}
-            {/*       onChange={(event) => setFilename(event.target.value)}*/}
-            {/*/>*/}
-            {/*<br/>*/}
-
+            <h1>Введите путь к файлу для анализа программного кода:</h1>
             <Grid container spacing={2}>
                 <Grid item xs={10}>
                     <TextField id="outlined-basic"
@@ -57,6 +86,8 @@ function Main() {
                 </Grid>
                 <Grid item xs={2}>
                     <Button variant="contained"
+                            size="large"
+                            className={classes.btn}
                             onClick={() => onFileUpload(filename)}>
                         Выполнить анализ
                     </Button>
@@ -74,103 +105,19 @@ function Main() {
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    <TableRow>
-                                        <TableCell align="center">1. Максимальное количество строк в классе</TableCell>
-                                        <TableCell align="center">{result.MAX_CLASS_LENGTH.thresholdValue}</TableCell>
-                                        <TableCell
-                                            align="center">{result.MAX_CLASS_LENGTH.warnings.length === 0 ? "Соответствует" : "Не соответствует"}</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell align="center">2. Максимальное количество строк в методе</TableCell>
-                                        <TableCell align="center">{result.MAX_BODY_LENGTH.thresholdValue}</TableCell>
-                                        <TableCell
-                                            align="center">{result.MAX_BODY_LENGTH.warnings.length === 0 ? "Соответствует" : "Не соответствует"}</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell align="center">3. Максимальная длина имени метода</TableCell>
-                                        <TableCell
-                                            align="center">{result.MAX_METHOD_NAME_LENGTH.thresholdValue}</TableCell>
-                                        <TableCell
-                                            align="center">{result.MAX_METHOD_NAME_LENGTH.warnings.length === 0 ? "Соответствует" : "Не соответствует"}</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell align="center">4. Максимальное количество параметров в
-                                            методе</TableCell>
-                                        <TableCell align="center">{result.MAX_PARAM_COUNT.thresholdValue}</TableCell>
-                                        <TableCell
-                                            align="center">{result.MAX_PARAM_COUNT.warnings.length === 0 ? "Соответствует" : "Не соответствует"}</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell align="center">5. Максимальная длина наименования параметров метода,
-                                            полей класса</TableCell>
-                                        <TableCell
-                                            align="center">{result.MAX_VARIABLE_LENGTH.thresholdValue}</TableCell>
-                                        <TableCell
-                                            align="center">{result.MAX_VARIABLE_LENGTH.warnings.length === 0 ? "Соответствует" : "Не соответствует"}</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell align="center">6. Максимальное количество полей в классе</TableCell>
-                                        <TableCell align="center">{result.MAX_VARIABLE_COUNT.thresholdValue}</TableCell>
-                                        <TableCell
-                                            align="center">{result.MAX_VARIABLE_COUNT.warnings.length === 0 ? "Соответствует" : "Не соответствует"}</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell align="center">7. Максимальное количество методов в
-                                            классе</TableCell>
-                                        <TableCell align="center">{result.MAX_METHODS_COUNT.thresholdValue}</TableCell>
-                                        <TableCell
-                                            align="center">{result.MAX_METHODS_COUNT.warnings.length === 0 ? "Соответствует" : "Не соответствует"}</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell align="center">8. Минимальная длина наименования полей в классе,
-                                            параметров в методе</TableCell>
-                                        <TableCell
-                                            align="center">{result.MIN_VARIABLE_LENGTH.thresholdValue}</TableCell>
-                                        <TableCell
-                                            align="center">{result.MIN_VARIABLE_LENGTH.warnings.length === 0 ? "Соответствует" : "Не соответствует"}</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell align="center">9. Названия логических методов начинаются с приставки
-                                            is,
-                                            has</TableCell>
-                                        <TableCell
-                                            align="center">{result.BOOLEAN_STARTS_WITH_IS_HAS.thresholdValue ? "Да" : "Нет"}</TableCell>
-                                        <TableCell
-                                            align="center">{result.BOOLEAN_STARTS_WITH_IS_HAS.warnings.length === 0 ? "Соответствует" : "Не соответствует"}</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell align="center">10. Наименования классов, методов, параметров, полей
-                                            указано в CamelCase стиле, коснтанты в UPPER_CASE</TableCell>
-                                        <TableCell
-                                            align="center">{result.CAMEL_CASE_CLASS_NAME.thresholdValue ? "Да" : "Нет"}</TableCell>
-                                        <TableCell
-                                            align="center">{result.CAMEL_CASE_CLASS_NAME.warnings.length === 0 ? "Соответствует" : "Не соответствует"}</TableCell>
-                                        {/*    todo: объединить ворнинги по проверке на camelCase методов, параметров, полей и тд*/}
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell align="center">11. Максимальное количество символов в строке
-                                            кода</TableCell>
-                                        <TableCell
-                                            align="center">{result.MAX_SYMBOLS_COUNT_PER_LINE.thresholdValue}</TableCell>
-                                        <TableCell
-                                            align="center">{result.MAX_SYMBOLS_COUNT_PER_LINE.warnings.length === 0 ? "Соответствует" : "Не соответствует"}</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell align="center">12. Максимальное количество действий в одной
-                                            строке</TableCell>
-                                        <TableCell
-                                            align="center">{result.ONE_ACTION_PER_LINE.thresholdValue}</TableCell>
-                                        <TableCell
-                                            align="center">{result.ONE_ACTION_PER_LINE.warnings.length === 0 ? "Соответствует" : "Не соответствует"}</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell align="center">12. Максимальное количество пустых строк для акцента
-                                            внимания внутри классов</TableCell>
-                                        <TableCell
-                                            align="center">{result.MAX_EMPTY_LINES_COUNT_PER_METHOD.thresholdValue}</TableCell>
-                                        <TableCell
-                                            align="center">{result.MAX_EMPTY_LINES_COUNT_PER_METHOD.warnings.length === 0 ? "Соответствует" : "Не соответствует"}</TableCell>
-                                    </TableRow>
+                                    {getTableRow(result.MAX_CLASS_LENGTH)}
+                                    {getTableRow(result.MAX_BODY_LENGTH)}
+                                    {getTableRow(result.MAX_METHOD_NAME_LENGTH)}
+                                    {getTableRow(result.MAX_PARAM_COUNT)}
+                                    {getTableRow(result.MAX_VARIABLE_LENGTH)}
+                                    {getTableRow(result.MAX_VARIABLE_COUNT)}
+                                    {getTableRow(result.MAX_METHODS_COUNT)}
+                                    {getTableRow(result.MIN_VARIABLE_LENGTH)}
+                                    {getTableRow(result.BOOLEAN_STARTS_WITH_IS_HAS)}
+                                    {getTableRow(result.NAMES_IN_CAMEL_CASE)}
+                                    {getTableRow(result.MAX_SYMBOLS_COUNT_PER_LINE)}
+                                    {getTableRow(result.MAX_NUMBER_OF_ACTIONS_PER_LINE)}
+                                    {getTableRow(result.MAX_EMPTY_LINES_COUNT_PER_METHOD)}
                                 </TableBody>
                             </Table>
                         </TableContainer>

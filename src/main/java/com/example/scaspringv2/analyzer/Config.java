@@ -66,16 +66,7 @@ public final class Config {
     /**
      * Class name must be in CamelCase
      */
-    public static final boolean CAMEL_CASE_CLASS_NAME = true; //10
-
-    /**
-     * Method must be in camelCase
-     */
-    public static final boolean METHOD_IN_CAMEL_CASE = true; // 10
-    /**
-     * Fields/parameters must be in camelCase
-     */
-    public static final boolean PARAM_IN_CAMEL_CASE = true; //10
+    public static final boolean CAMEL_CASE_CLASS_NAME_PARAMS_METHODS = true; //10
     /**
      * Maximum count of symbols in code line
      */
